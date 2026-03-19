@@ -890,3 +890,29 @@ pre code {
         padding: 6px 14px;
     }
 }
+
+/* ============================================
+   챕터 배경 이미지 오버레이
+   ============================================ */
+.slide.with-bg-image {
+    position: relative;
+}
+
+.slide.with-bg-image .bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(248, 250, 252, 0.88);
+    z-index: 0;
+}
+
+.slide.with-bg-image > *:not(.bg-overlay) {
+    position: relative;
+    z-index: 1;
+}
+
+.slide-side-image {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    object-fit: cover;
+}
