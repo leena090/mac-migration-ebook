@@ -224,10 +224,19 @@
             }
         }, { passive: true });
 
-        // 마우스 휠 (트랙패드 2핑거 스크롤)
+        // 마우스 휠 (트랙패드 2핑거 스크롤 + 핀치 줌)
         let wheelTimeout = null;
         document.addEventListener('wheel', function (e) {
             e.preventDefault();
+
+            // 트랙패드 핀치 줌 (ctrlKey가 true이면 핀치 제스처)
+            if (e.ctrlKey) {
+                if (e.deltaY < 0) zoomIn();
+                else if (e.deltaY > 0) zoomOut();
+                return;
+            }
+
+            // 일반 스크롤 → 슬라이드 이동
             if (wheelTimeout) return;
             wheelTimeout = setTimeout(() => { wheelTimeout = null; }, 300);
 
