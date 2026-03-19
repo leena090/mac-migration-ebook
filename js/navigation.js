@@ -13,6 +13,7 @@
     let isAnimating = false;       // 애니메이션 잠금 플래그
     let touchStartX = 0;           // 터치 시작 X좌표
     let touchStartY = 0;           // 터치 시작 Y좌표
+    let zoomLevel = 0;             // 줌 레벨 (0=자동, +1씩 확대, -1씩 축소)
 
     /* ── 초기화 ── */
     function init() {
@@ -107,11 +108,17 @@
             <button class="nav-btn" id="prevBtn" aria-label="이전 슬라이드">&#9664;</button>
             <span class="nav-info" id="navInfo">1 / ${totalSlides}</span>
             <button class="nav-btn" id="nextBtn" aria-label="다음 슬라이드">&#9654;</button>
+            <span style="color:rgba(255,255,255,0.3);margin:0 4px;">|</span>
+            <button class="nav-btn" id="zoomOutBtn" aria-label="축소" style="font-size:16px;">−</button>
+            <span class="nav-info" id="zoomInfo" style="min-width:40px;opacity:0.5;">100%</span>
+            <button class="nav-btn" id="zoomInBtn" aria-label="확대" style="font-size:16px;">+</button>
         `;
         document.body.appendChild(nav);
 
         document.getElementById('prevBtn').addEventListener('click', prevSlide);
         document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('zoomInBtn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOutBtn').addEventListener('click', zoomOut);
     }
 
     function updateNavInfo() {
@@ -121,17 +128,43 @@
         }
     }
 
-    /* ── 슬라이드 스케일링 (뷰포트 맞춤) ── */
+    /* ── 슬라이드 스케일링 (뷰포트 맞춤 + 줌) ── */
     function scaleSlides() {
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const scaleX = vw / 1920;
         const scaleY = vh / 1080;
-        const scale = Math.min(scaleX, scaleY);
+        const baseScale = Math.min(scaleX, scaleY);
+        // 줌 레벨 적용 (10%씩 확대/축소)
+        const scale = baseScale * (1 + zoomLevel * 0.1);
 
         slides.forEach(slide => {
             slide.style.transform = `translate(-50%, -50%) scale(${scale})`;
         });
+
+        // 줌 표시 업데이트
+        updateZoomInfo(Math.round(scale * 100));
+    }
+
+    function zoomIn() {
+        if (zoomLevel < 5) { zoomLevel++; scaleSlides(); }
+    }
+
+    function zoomOut() {
+        if (zoomLevel > -3) { zoomLevel--; scaleSlides(); }
+    }
+
+    function zoomReset() {
+        zoomLevel = 0; scaleSlides();
+    }
+
+    function updateZoomInfo(pct) {
+        let el = document.getElementById('zoomInfo');
+        if (!el) return;
+        el.textContent = pct + '%';
+        el.style.opacity = '1';
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => { el.style.opacity = '0.5'; }, 1500);
     }
 
     /* ── 이벤트 바인딩 ── */
@@ -157,6 +190,19 @@
                 case 'End':
                     e.preventDefault();
                     showSlide(totalSlides - 1);
+                    break;
+                case '=':
+                case '+':
+                    e.preventDefault();
+                    zoomIn();
+                    break;
+                case '-':
+                    e.preventDefault();
+                    zoomOut();
+                    break;
+                case '0':
+                    e.preventDefault();
+                    zoomReset();
                     break;
             }
         });
